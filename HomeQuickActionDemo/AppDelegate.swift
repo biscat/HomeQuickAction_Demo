@@ -16,20 +16,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
-        if ((self.window?.traitCollection.forceTouchCapability) == UIForceTouchCapability.Available) {
-            let historyIcon = UIApplicationShortcutIcon.init(templateImageName: "shortcut_history")
-            let historyItem = UIApplicationShortcutItem.init(type: "history", localizedTitle: "History from code", localizedSubtitle:nil, icon: historyIcon, userInfo: nil)
+        var shouldPerformAdditionalDelegateHandling = true
+        
+        // If a shortcut was launched, display its information and take the appropriate action
+        if let _ = launchOptions?[UIApplicationLaunchOptionsShortcutItemKey] as? UIApplicationShortcutItem {
             
-            let downloadIcon = UIApplicationShortcutIcon.init(templateImageName: "shortcut_download")
-            let downloadItem = UIApplicationShortcutItem.init(type: "download", localizedTitle: "Download from code", localizedSubtitle: nil, icon: downloadIcon, userInfo: nil)
-            
-            application.shortcutItems = [historyItem, downloadItem]
+            // This will block "performActionForShortcutItem:completionHandler" from being called.
+            shouldPerformAdditionalDelegateHandling = false
         }
         
-        let item = launchOptions?[UIApplicationLaunchOptionsShortcutItemKey] as? UIApplicationShortcutItem
-        print("item is: \(item)")
+        if ((self.window?.traitCollection.forceTouchCapability) == UIForceTouchCapability.Available) {
+            let historyIcon = UIApplicationShortcutIcon.init(type: .Add)
+            let historyItem = UIApplicationShortcutItem.init(type: "history", localizedTitle: "History from code", localizedSubtitle:nil, icon: historyIcon, userInfo: nil)
+            
+            let downloadIcon = UIApplicationShortcutIcon.init(type: .Audio)
+            let downloadItem = UIApplicationShortcutItem.init(type: "download", localizedTitle: "Download from code", localizedSubtitle: nil, icon: downloadIcon, userInfo: nil)
+            
+            let additionalIcon = UIApplicationShortcutIcon.init(type: .Bookmark)
+            let additionalItem = UIApplicationShortcutItem.init(type: "addition", localizedTitle: "Addition from code", localizedSubtitle: nil, icon: additionalIcon, userInfo: nil)
+            
+            //application.shortcutItems = [historyItem, downloadItem]
+            application.shortcutItems = [historyItem, downloadItem, additionalItem]
+        }
         
-        return true
+        
+        print("\(shouldPerformAdditionalDelegateHandling)")
+        return shouldPerformAdditionalDelegateHandling
     }
 
     func applicationWillResignActive(application: UIApplication) {
@@ -60,8 +72,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //we can use   shortcutItem.type  &   shortcutItem.userinfo     to handle different event
         
         //only when your app is activated and in background, this would conditionally called, indicated by the completionHandler return YES in this case
-        // if you lauch the app with Quick Action, this completionHandler would return NO and that means
-        // our event handler callback should  handle in   didFinishLauchingWithOptions: (NSDictionary *)lauchOptions;
         
         if shortcutItem.type == "history" {
             print("This is history")
